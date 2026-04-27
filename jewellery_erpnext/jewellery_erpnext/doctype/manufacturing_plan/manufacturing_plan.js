@@ -19,7 +19,7 @@ frappe.ui.form.on("Manufacturing Plan", {
 	},
 	get_sales_order(frm) {
 		map_current_doc({
-			method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_sales_order",
+			method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_details_to_append",
 			source_doctype: "Sales Order",
 			target: frm,
 			setters: {
@@ -35,7 +35,7 @@ frappe.ui.form.on("Manufacturing Plan", {
 	},
 	get_mwo(frm) {
 		map_current_doc({
-			method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.doc_events.utils.get_mwo",
+			method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_details_to_append",
 			source_doctype: "Manufacturing Work Order",
 			target: frm,
 			setters: {
@@ -53,20 +53,20 @@ frappe.ui.form.on("Manufacturing Plan", {
 		});
 	},
 	get_repair_order(frm) {
-		map_current_doc({
-			method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_sales_order",
-			source_doctype: "Sales Order",
-			target: frm,
-			setters: {
-				customer: null,
-				transaction_date: null,
-				company: frm.doc.company,
-				branch: frm.doc.branch,
-			},
-			get_query_method:
-				"jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_repair_pending_ppo_sales_order",
-			size: "extra-large",
-		});
+		// map_current_doc({
+		// 	method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_sales_order",
+		// 	source_doctype: "Sales Order",
+		// 	target: frm,
+		// 	setters: {
+		// 		customer: null,
+		// 		transaction_date: null,
+		// 		company: frm.doc.company,
+		// 		branch: frm.doc.branch,
+		// 	},
+		// 	 get_query_method:
+		// 	 	"jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.get_repair_pending_ppo_sales_order",
+		// 	size: "extra-large",
+		// });
 	},
 	show_progress(frm) {
 		var bars = [];
@@ -163,7 +163,7 @@ var map_current_doc = function (opts) {
 			// Sometimes we hit the limit for URL length of a GET request
 			// as we send the full target_doc. Hence this is a POST request.
 			type: "POST",
-			method: "frappe.model.mapper.map_docs",
+			method: "jewellery_erpnext.jewellery_erpnext.doctype.manufacturing_plan.manufacturing_plan.map_docs",
 			args: {
 				method: opts.method,
 				source_names: opts.source_name,

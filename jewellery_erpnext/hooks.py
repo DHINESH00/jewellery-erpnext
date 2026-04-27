@@ -33,12 +33,11 @@ doctype_js = {
 	"Purchase Receipt": "public/js/doctype_js/purchase_receipt.js",
 	"Purchase Invoice": "public/js/doctype_js/purchase_invoice.js",
 	"Stock Reconciliation": "public/js/doctype_js/stock_reconciliation.js",
-	"Payment Entry": "public/js/doctype_js/payment_entry.js"
+	"Payment Entry": "public/js/doctype_js/payment_entry.js",
 }
 
 doctype_list_js = {
-		"Payment Entry": "public/js/doctype_list/payment_entry_list.js",
-
+	"Payment Entry": "public/js/doctype_list/payment_entry_list.js",
 }
 
 # from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
@@ -103,10 +102,15 @@ doc_events = {
 			"jewellery_erpnext.jewellery_erpnext.doc_events.stock_entry.before_validate",
 			"jewellery_erpnext.jewellery_erpnext.customization.stock_entry.stock_entry.before_validate",
 		],
-		"before_submit": "jewellery_erpnext.jewellery_erpnext.doc_events.stock_entry.before_submit",
+		"before_submit": [
+			"jewellery_erpnext.jewellery_erpnext.doc_events.stock_entry.before_submit",
+			"jewellery_erpnext.customer_subcontracting.batch_rename.create_parent_batches",
+			"jewellery_erpnext.customer_subcontracting.batch_rename.create_child_batches",
+		],
 		"on_submit": [
 			"jewellery_erpnext.jewellery_erpnext.doc_events.stock_entry.onsubmit",
 			"jewellery_erpnext.jewellery_erpnext.customization.stock_entry.stock_entry.on_submit",
+			"jewellery_erpnext.customer_subcontracting.batch_rename.create_repack_for_used_other",
 		],
 		"on_cancel": "jewellery_erpnext.jewellery_erpnext.doc_events.stock_entry.on_cancel",
 		"on_update_after_submit": "jewellery_erpnext.jewellery_erpnext.doc_events.stock_entry.on_update_after_submit",
@@ -122,7 +126,9 @@ doc_events = {
 	"Gemstone Weight": {
 		"validate": "jewellery_erpnext.jewellery_erpnext.doc_events.gemstone_weight.validate"
 	},
-	"Warehouse": {"validate": "jewellery_erpnext.jewellery_erpnext.doc_events.warehouse.validate"},
+	"Warehouse": {
+		"validate": "jewellery_erpnext.jewellery_erpnext.doc_events.warehouse.validate"
+	},
 	"Purchase Order": {
 		"validate": "jewellery_erpnext.jewellery_erpnext.doc_events.purchase_order.validate",
 		"on_cancel": "jewellery_erpnext.jewellery_erpnext.doc_events.purchase_order.on_cancel",
@@ -148,12 +154,13 @@ doc_events = {
 	},
 	"Purchase Receipt": {
 		"before_validate": "jewellery_erpnext.jewellery_erpnext.customization.purchase_receipt.purchase_receipt.before_validate",
+		"before_submit": "jewellery_erpnext.customer_subcontracting.batch_rename.create_parent_batches",
 		"on_submit": "jewellery_erpnext.jewellery_erpnext.customization.purchase_receipt.purchase_receipt.on_submit",
 	},
 	"Batch": {
 		"validate": "jewellery_erpnext.jewellery_erpnext.customization.batch.batch.validate",
 		"autoname": "jewellery_erpnext.jewellery_erpnext.customization.batch.batch.autoname",
-		"on_update": "jewellery_erpnext.jewellery_erpnext.customization.batch.batch.on_update"
+		"on_update": "jewellery_erpnext.jewellery_erpnext.customization.batch.batch.on_update",
 	},
 	"Stock Reconciliation": {
 		"validate": "jewellery_erpnext.jewellery_erpnext.customization.stock_reconciliation.stock_reonciliation.validate_department"
@@ -165,7 +172,7 @@ doc_events = {
 	},
 	"Unreconcile Payment": {
 		"before_submit": "jewellery_erpnext.jewellery_erpnext.doc_events.unreconcile_payment.before_submit",
-	}
+	},
 }
 
 override_whitelisted_methods = {
@@ -180,17 +187,17 @@ override_doctype_class = {
 	"Stock Reconciliation": "jewellery_erpnext.jewellery_erpnext.doctype.stock_reconciliation_template.stock_reconciliation_template_utils.CustomStockReconciliation",
 	"Stock Ledger Entry": "jewellery_erpnext.jewellery_erpnext.customization.stock_ledger_entry.stock_ledger_entry.CustomStockLedgerEntry",
 	"Serial and Batch Bundle": "jewellery_erpnext.jewellery_erpnext.customization.serial_and_batch_bundle.serial_and_batch_bundle.CustomSerialandBatchBundle",
-	"Submission Queue":"jewellery_erpnext.jewellery_erpnext.customization.submission_queue.submission_queue.CustomSubmissionQueue",
-    # "Purchase Receipt": "jewellery_erpnext.jewellery_erpnext.doc_events.purchase_receipt.CustomPurchaseReceipt",
-    # "Purchase Invoice": "jewellery_erpnext.jewellery_erpnext.doc_events.purchase_invoice.CustomPurchaseInvoice"
+	"Submission Queue": "jewellery_erpnext.jewellery_erpnext.customization.submission_queue.submission_queue.CustomSubmissionQueue",
+	# "Purchase Receipt": "jewellery_erpnext.jewellery_erpnext.doc_events.purchase_receipt.CustomPurchaseReceipt",
+	# "Purchase Invoice": "jewellery_erpnext.jewellery_erpnext.doc_events.purchase_invoice.CustomPurchaseInvoice"
 }
 
 
-# scheduler_events = {
-# 	"hourly": [
-# 		"jewellery_erpnext.jewellery_erpnext.customization.stock_entry.doc_events.se_utils.rename_stock_entry_docs"
-# 	],
-# }
+scheduler_events = {
+	"daily_long": [
+		"jewellery_erpnext.jewellery_erpnext.doctype.mop_settings.mop_eod_sync.sync_mop_logs"
+	],
+}
 
 # from erpnext.stock import get_item_details
 # from jewellery_erpnext.erpnext_override import get_price_list_rate_for
@@ -237,14 +244,44 @@ user_data_fields = [
 # 	"jewellery_erpnext.auth.validate"
 # ]
 
-# fixtures = [
-#     {
-#          "dt": "Custom Field",
-#          "filters":["name", "in", [
-#              'Stock Entry Detail-custom_sub_setting_type',
-#              'Stock Entry Detail-custom_is_customer_item',
-#              'Material Request Item-custom_sub_setting_type',
-#              'Material Request Item-custom_is_customer_item'
-# 		]]
-#       }
-#     ]
+fixtures = [
+	{
+		"doctype": "Workflow",
+		"filters": [
+			[
+				"name",
+				"in",
+				["Sketch Order Form Approval", "Sketch Order Approval with Purchase 1"],
+			]
+		],
+	},
+	"Workflow State",
+	"Workflow Action Master",
+	{
+		"doctype": "Role",
+		"filters": [["name", "in", ["GK sales user", "Sketch QC", "All"]]],
+	},
+	{
+		"doctype": "Custom Field",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Sketch Order Form-workflow_state",
+					"Sketch Order-inventory_dimension",
+					"Sketch Order-inventory_type",
+					"Sketch Order-workflow_state",
+					"Sketch Order-custom_sketch_workflow_state",
+					"Sketch Order-custom_sketch_order_customer_approval_flow",
+					"Sketch Order-manufacturer",
+					"Sketch Order-custom_nakshi_from",
+					"Sketch Order-custom_item",
+				],
+			]
+		],
+	},
+	# {
+	#     "doctype":"Custom Field", "filters":{"module":["in",["Jewellery Erpnext"]]}
+	# }
+]

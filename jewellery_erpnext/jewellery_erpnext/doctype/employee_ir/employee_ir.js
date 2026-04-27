@@ -5,12 +5,7 @@ frappe.ui.form.on("Employee IR", {
 	refresh(frm) {
 		set_child_table_batch_filter(frm);
 		set_html(frm);
-		if (
-			frm.doc.docstatus == 0 &&
-			!frm.doc.__islocal &&
-			frm.doc.type == "Receive" &&
-			frm.doc.is_qc_reqd
-		) {
+		if (frm.doc.docstatus == 0 && !frm.doc.__islocal && frm.doc.type == "Receive" && frm.doc.is_qc_reqd) {
 			frm.add_custom_button(__("Generate QC"), function () {
 				frm.dirty();
 				frm.save();
@@ -32,12 +27,7 @@ frappe.ui.form.on("Employee IR", {
 			return {
 				filters: [
 					["Department Operation", "department", "=", frm.doc.department],
-					[
-						"Department Operation",
-						"is_subcontracted",
-						"=",
-						frm.doc.subcontracting == "Yes",
-					],
+					["Department Operation", "is_subcontracted", "=", frm.doc.subcontracting == "Yes"],
 				],
 			};
 		});
@@ -46,7 +36,7 @@ frappe.ui.form.on("Employee IR", {
 				filters: [["Department", "company", "=", frm.doc.company]],
 			};
 		});
-		if (frm.doc.subcontracting == 'No'){
+		if (frm.doc.subcontracting == "No") {
 			frm.set_query("main_slip", function (doc) {
 				return {
 					filters: {
@@ -57,15 +47,14 @@ frappe.ui.form.on("Employee IR", {
 					},
 				};
 			});
-		}
-		else{
+		} else {
 			frm.set_query("main_slip", function (doc) {
 				return {
 					filters: {
 						docstatus: 0,
 						subcontractor: frm.doc.subcontractor,
 						for_subcontracting: 1,
-						operation:frm.doc.operation,
+						operation: frm.doc.operation,
 						workflow_state: "In Use",
 					},
 				};
@@ -79,25 +68,21 @@ frappe.ui.form.on("Employee IR", {
 				},
 			};
 		});
-		frm.set_query(
-			"manufacturing_operation",
-			"employee_ir_operations",
-			function (doc, cdt, cdn) {
-				var filters = {
-					department: frm.doc.department,
-					operation: ["is", "not set"],
-				};
-				if (doc.subcontracting == "Yes") {
-					filters["employee"] = ["is", "not set"];
-				} else {
-					filters["subcontractor"] = ["is", "not set"];
-				}
-
-				return {
-					filters: filters,
-				};
+		frm.set_query("manufacturing_operation", "employee_ir_operations", function (doc, cdt, cdn) {
+			var filters = {
+				department: frm.doc.department,
+				operation: ["is", "not set"],
+			};
+			if (doc.subcontracting == "Yes") {
+				filters["employee"] = ["is", "not set"];
+			} else {
+				filters["subcontractor"] = ["is", "not set"];
 			}
-		);
+
+			return {
+				filters: filters,
+			};
+		});
 		frm.set_query("subcontractor", function () {
 			return {
 				filters: [["Operation MultiSelect", "operation", "=", frm.doc.operation]],
@@ -115,9 +100,7 @@ frappe.ui.form.on("Employee IR", {
 		if (frm.doc.scan_mwo) {
 			frm.doc.employee_ir_operations.forEach(function (item) {
 				if (item.manufacturing_work_order == frm.doc.scan_mwo)
-					frappe.throw(
-						__("{0} Manufacturing Work Order already exists", [frm.doc.scan_mwo])
-					);
+					frappe.throw(__("{0} Manufacturing Work Order already exists", [frm.doc.scan_mwo]));
 			});
 			// if (frm.doc.employee_ir_operations.length > 30) {
 			// 	frappe.throw(__("Only 30 MOP allowed in one document"));
@@ -150,14 +133,19 @@ frappe.ui.form.on("Employee IR", {
 					"name",
 					"manufacturing_work_order",
 					"status",
+					"gross_wt",
+					"diamond_wt",
+					"diamond_pcs",
+					"gemstone_wt",
+					"gemstone_pcs",
 				])
-				.then((r) => {
-					let values = r.message;
+					.then((r) => {
+						let values = r.message;
 
-					if (values.manufacturing_work_order) {
-						frappe.db.get_value(
-							"QC",
-							{
+						if (values.manufacturing_work_order) {
+							frappe.db.get_value(
+								"QC",
+								{
 								manufacturing_work_order: values.manufacturing_work_order,
 								manufacturing_operation: values.name,
 								status: ["!=", "Rejected"],
@@ -170,6 +158,11 @@ frappe.ui.form.on("Employee IR", {
 									manufacturing_operation: values.name,
 									qc: a.name,
 									received_gross_wt: a.received_gross_wt,
+									gross_wt: values.gross_wt,
+									diamond_wt: values.diamond_wt,
+									diamond_pcs: values.diamond_pcs,
+									gemstone_wt: values.gemstone_wt,
+									gemstone_pcs: values.gemstone_pcs,
 								});
 								frm.refresh_field("employee_ir_operations");
 							}
@@ -276,7 +269,7 @@ frappe.ui.form.on("Employee IR", {
 			frm.refresh_field("mould_reference");
 		}
 	},
-	employee(frm){
+	employee(frm) {
 		frm.set_query("main_slip", function (doc) {
 			return {
 				filters: {
@@ -288,21 +281,21 @@ frappe.ui.form.on("Employee IR", {
 			};
 		});
 	},
-	subcontractor(frm){
+	subcontractor(frm) {
 		frm.set_query("main_slip", function (doc) {
 			return {
 				filters: {
 					docstatus: 0,
 					subcontractor: frm.doc.subcontractor,
 					for_subcontracting: 1,
-					operation:frm.doc.operation,
+					operation: frm.doc.operation,
 					workflow_state: "In Use",
 				},
 			};
 		});
 	},
-	subcontracting(frm){
-		if(frm.doc.subcontracting== 'Yes'){
+	subcontracting(frm) {
+		if (frm.doc.subcontracting == "Yes") {
 			frm.set_value("employee", "");
 			frm.set_query("main_slip", function (doc) {
 				return {
@@ -310,13 +303,12 @@ frappe.ui.form.on("Employee IR", {
 						docstatus: 0,
 						subcontractor: frm.doc.subcontractor,
 						for_subcontracting: 1,
-						operation:frm.doc.operation,
+						operation: frm.doc.operation,
 						workflow_state: "In Use",
 					},
 				};
 			});
-		}
-		else{
+		} else {
 			frm.set_value("subcontractor", "");
 			frm.set_query("main_slip", function (doc) {
 				return {
@@ -329,7 +321,7 @@ frappe.ui.form.on("Employee IR", {
 				};
 			});
 		}
-	}
+	},
 });
 function set_filters_on_parent_table_fields(frm, fields) {
 	fields.map(function (field) {
@@ -380,50 +372,50 @@ frappe.ui.form.on("Manually Book Loss Details", {
 	},
 });
 
-function book_loss_details(frm, mwo, opt, gwt, r_gwt) {
-	if (gwt == r_gwt) {
-		frm.clear_table("employee_loss_details");
-		frm.refresh_field("employee_loss_details");
-		frm.save();
-	}
-	frappe.call({
-		method: "jewellery_erpnext.jewellery_erpnext.doctype.employee_ir.employee_ir.book_metal_loss",
-		freeze: true,
-		args: {
-			doc: frm.doc,
-			mwo: mwo,
-			opt: opt,
-			gwt: gwt,
-			r_gwt: r_gwt,
-		},
-		callback: function (r) {
-			if (r.message) {
-				console.log(r.message);
-				frm.clear_table("employee_loss_details");
-				var r_data = r.message[0];
-				for (var i = 0; i < r_data.length; i++) {
-					if (r_data[i].proportionally_loss > 0) {
-						var child = frm.add_child("employee_loss_details");
-						child.item_code = r_data[i].item_code;
-						child.net_weight = r_data[i].qty;
-						child.stock_uom = r_data[i].stock_uom;
-						child.batch_no = r_data[i].batch_no;
-						child.manufacturing_work_order = r_data[i].manufacturing_work_order;
-						child.manufacturing_operation = r_data[i].manufacturing_operation;
-						child.proportionally_loss = r_data[i].proportionally_loss;
-						child.received_gross_weight = r_data[i].received_gross_weight;
-						child.main_slip_consumption = r_data[i].main_slip_consumption;
-						child.inventory_type = r_data[i].inventory_type;
-					}
-				}
+// function book_loss_details(frm, mwo, opt, gwt, r_gwt) {
+// 	if (gwt == r_gwt) {
+// 		frm.clear_table("employee_loss_details");
+// 		frm.refresh_field("employee_loss_details");
+// 		frm.save();
+// 	}
+// 	frappe.call({
+// 		method: "jewellery_erpnext.jewellery_erpnext.doctype.employee_ir.employee_ir.book_metal_loss",
+// 		freeze: true,
+// 		args: {
+// 			doc: frm.doc,
+// 			mwo: mwo,
+// 			opt: opt,
+// 			gwt: gwt,
+// 			r_gwt: r_gwt,
+// 		},
+// 		callback: function (r) {
+// 			if (r.message) {
+// 				console.log(r.message);
+// 				frm.clear_table("employee_loss_details");
+// 				var r_data = r.message[0];
+// 				for (var i = 0; i < r_data.length; i++) {
+// 					if (r_data[i].proportionally_loss > 0) {
+// 						var child = frm.add_child("employee_loss_details");
+// 						child.item_code = r_data[i].item_code;
+// 						child.net_weight = r_data[i].qty;
+// 						child.stock_uom = r_data[i].stock_uom;
+// 						child.batch_no = r_data[i].batch_no;
+// 						child.manufacturing_work_order = r_data[i].manufacturing_work_order;
+// 						child.manufacturing_operation = r_data[i].manufacturing_operation;
+// 						child.proportionally_loss = r_data[i].proportionally_loss;
+// 						child.received_gross_weight = r_data[i].received_gross_weight;
+// 						child.main_slip_consumption = r_data[i].main_slip_consumption;
+// 						child.inventory_type = r_data[i].inventory_type;
+// 					}
+// 				}
 
-				frm.set_value("mop_loss_details_total", r.message[1]);
-				frm.refresh_field("employee_loss_details");
-				frm.refresh_field("mop_loss_details_total");
-			}
-		},
-	});
-}
+// 				frm.set_value("mop_loss_details_total", r.message[1]);
+// 				frm.refresh_field("employee_loss_details");
+// 				frm.refresh_field("mop_loss_details_total");
+// 			}
+// 		},
+// 	});
+// }
 
 function add_subcon_button(frm) {
 	if (frm.doc.subcontracting == "Yes") {
@@ -483,9 +475,7 @@ function set_html(frm) {
 		},
 		callback: function (r) {
 			if (r.message) {
-				frm.get_field("summary").$wrapper.html(
-					frappe.render_template(template, { data: r.message })
-				);
+				frm.get_field("summary").$wrapper.html(frappe.render_template(template, { data: r.message }));
 			}
 		},
 	});
@@ -502,7 +492,7 @@ function set_child_table_batch_filter(frm) {
 			query: "jewellery_erpnext.jewellery_erpnext.doctype.employee_ir.doc_events.filters.get_batch_details",
 			filters: {
 				item_code: d.item_code,
-				manufacturing_operation: d.manufacturing_operation,
+				manufacturing_work_order: d.manufacturing_work_order,
 			},
 		};
 	};
